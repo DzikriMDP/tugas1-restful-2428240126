@@ -59,6 +59,56 @@ app.get("/songs", (req, res) => {
   });
 });
 
+app.post("/songs", (req, res) => {
+  const { judul, artis, album, tahunRilis, durasiDetik } = req.body;
+
+  if (!judul || !artis || tahunRilis === undefined) {
+    return res.status(400).json({
+      message: "judul, artis, dan tahunRilis wajib diisi"
+    });
+  }
+
+  if (typeof judul !== "string" || typeof artis !== "string") {
+    return res.status(400).json({
+      message: "judul dan artis harus berupa teks"
+    });
+  }
+
+  if (typeof tahunRilis !== "number") {
+    return res.status(400).json({
+      message: "tahunRilis harus berupa angka"
+    });
+  }
+
+  if (album !== undefined && typeof album !== "string") {
+    return res.status(400).json({
+      message: "album harus berupa teks"
+    });
+  }
+
+  if (durasiDetik !== undefined && typeof durasiDetik !== "number") {
+    return res.status(400).json({
+      message: "durasiDetik harus berupa angka"
+    });
+  }
+
+  const newSong = {
+    id: songs.length > 0 ? songs[songs.length - 1].id + 1 : 1,
+    judul: judul,
+    artis: artis,
+    album: album,
+    tahunRilis: tahunRilis,
+    durasiDetik: durasiDetik
+  };
+
+  songs.push(newSong);
+
+  res.status(201).json({
+    message: "Lagu berhasil ditambahkan",
+    data: newSong
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server berjalan di http://localhost:${PORT}`);
 });
