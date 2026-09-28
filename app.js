@@ -228,6 +228,29 @@ app.put("/songs/:id", (req, res) => {
   });
 });
 
+app.delete("/songs/:id", (req, res) => {
+  const id = Number(req.params.id);
+
+  const index = songs.findIndex((song) => song.id === id);
+
+  // Jika ID tidak ditemukan
+  if (index === -1) {
+    return res.status(404).json({
+      message: "Lagu tidak ditemukan",
+      data: null
+    });
+  }
+
+  // Menghapus data
+  songs.splice(index, 1);
+
+  // Response berhasil
+  res.status(200).json({
+    message: "Lagu berhasil dihapus",
+    data: null
+  });
+});
+
 // SERVER
 
 app.listen(PORT, () => {
