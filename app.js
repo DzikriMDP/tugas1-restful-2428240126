@@ -33,7 +33,10 @@ let songs = [
   }
 ];
 
+let nextId = 4;
+
 // ROOT
+// GET /
 
 app.get("/", (req, res) => {
   res.json({
@@ -53,6 +56,10 @@ app.get("/", (req, res) => {
   });
 });
 
+
+// GET SEMUA LAGU
+// GET /songs
+
 app.get("/songs", (req, res) => {
   const artis = req.query.artis;
 
@@ -61,15 +68,14 @@ app.get("/songs", (req, res) => {
       (song) => song.artis.toLowerCase() === artis.toLowerCase()
     );
 
-    return res.json({
-      data: hasil
-    });
+    return res.json(hasil);
   }
 
-  res.json({
-    data: songs
-  });
+  res.json(songs);
 });
+
+// GET SATU LAGU
+// GET /songs/:id
 
 app.get("/songs/:id", (req, res) => {
   const id = Number(req.params.id);
@@ -78,14 +84,25 @@ app.get("/songs/:id", (req, res) => {
 
   if (!song) {
     return res.status(404).json({
-      message: "Lagu tidak ditemukan"
+      status: "error",
+      message: `Lagu dengan id ${id} tidak ditemukan`,
+      data: null
     });
   }
 
-  res.json({
-    data: song
-  });
+  res.json(song);
 });
+
+// POST LAGU
+// POST /songs
+// Body:
+// {
+//   "judul": "Bintang Malam",
+//   "artis": "Senandung",
+//   "album": "Langit Malam",
+//   "tahunRilis": 2025,
+//   "durasiDetik": 220
+// }
 
 app.post("/songs", (req, res) => {
   const {
@@ -99,28 +116,36 @@ app.post("/songs", (req, res) => {
   // Validasi field wajib
   if (!judul || !artis || tahunRilis === undefined) {
     return res.status(400).json({
-      message: "judul, artis, dan tahunRilis wajib diisi"
+      status: "error",
+      message: "judul, artis, dan tahunRilis wajib diisi",
+      data: null
     });
   }
 
-  // Validasi tipe judul dan artis
+  // Validasi tipe data judul dan artis
   if (typeof judul !== "string" || typeof artis !== "string") {
     return res.status(400).json({
-      message: "judul dan artis harus berupa teks"
+      status: "error",
+      message: "judul dan artis harus berupa teks",
+      data: null
     });
   }
 
   // Validasi tahunRilis
   if (typeof tahunRilis !== "number") {
     return res.status(400).json({
-      message: "tahunRilis harus berupa angka"
+      status: "error",
+      message: "tahunRilis harus berupa angka",
+      data: null
     });
   }
 
   // Validasi album jika diisi
   if (album !== undefined && typeof album !== "string") {
     return res.status(400).json({
-      message: "album harus berupa teks"
+      status: "error",
+      message: "album harus berupa teks",
+      data: null
     });
   }
 
@@ -130,15 +155,15 @@ app.post("/songs", (req, res) => {
     typeof durasiDetik !== "number"
   ) {
     return res.status(400).json({
-      message: "durasiDetik harus berupa angka"
+      status: "error",
+      message: "durasiDetik harus berupa angka",
+      data: null
     });
   }
 
-  // Membuat ID baru
+  // Membuat data lagu baru
   const newSong = {
-    id: songs.length > 0
-      ? songs[songs.length - 1].id + 1
-      : 1,
+    id: nextId++,
     judul: judul,
     artis: artis,
     album: album,
@@ -146,25 +171,37 @@ app.post("/songs", (req, res) => {
     durasiDetik: durasiDetik
   };
 
-  // Menambahkan data
   songs.push(newSong);
 
-  // Response 201
   res.status(201).json({
+    status: "success",
     message: "Lagu berhasil ditambahkan",
     data: newSong
   });
 });
+
+// PUT LAGU
+// PUT /songs/:id
+// Body:
+// {
+//   "judul": "Langit Jingga Updated",
+//   "artis": "Senandung",
+//   "album": "Sore di Kota",
+//   "tahunRilis": 2025,
+//   "durasiDetik": 220
+// }
 
 app.put("/songs/:id", (req, res) => {
   const id = Number(req.params.id);
 
   const song = songs.find((song) => song.id === id);
 
-  // Jika ID tidak ditemukan
+  // Validasi ID
   if (!song) {
     return res.status(404).json({
-      message: "Lagu tidak ditemukan"
+      status: "error",
+      message: `Lagu dengan id ${id} tidak ditemukan`,
+      data: null
     });
   }
 
@@ -179,28 +216,36 @@ app.put("/songs/:id", (req, res) => {
   // Validasi field wajib
   if (!judul || !artis || tahunRilis === undefined) {
     return res.status(400).json({
-      message: "judul, artis, dan tahunRilis wajib diisi"
+      status: "error",
+      message: "judul, artis, dan tahunRilis wajib diisi",
+      data: null
     });
   }
 
   // Validasi judul dan artis
   if (typeof judul !== "string" || typeof artis !== "string") {
     return res.status(400).json({
-      message: "judul dan artis harus berupa teks"
+      status: "error",
+      message: "judul dan artis harus berupa teks",
+      data: null
     });
   }
 
   // Validasi tahunRilis
   if (typeof tahunRilis !== "number") {
     return res.status(400).json({
-      message: "tahunRilis harus berupa angka"
+      status: "error",
+      message: "tahunRilis harus berupa angka",
+      data: null
     });
   }
 
   // Validasi album
   if (album !== undefined && typeof album !== "string") {
     return res.status(400).json({
-      message: "album harus berupa teks"
+      status: "error",
+      message: "album harus berupa teks",
+      data: null
     });
   }
 
@@ -210,23 +255,29 @@ app.put("/songs/:id", (req, res) => {
     typeof durasiDetik !== "number"
   ) {
     return res.status(400).json({
-      message: "durasiDetik harus berupa angka"
+      status: "error",
+      message: "durasiDetik harus berupa angka",
+      data: null
     });
   }
 
-  // Update data
+  // Mengubah data lagu
   song.judul = judul;
   song.artis = artis;
   song.album = album;
   song.tahunRilis = tahunRilis;
   song.durasiDetik = durasiDetik;
 
-  // Response
-  res.json({
+  res.status(200).json({
+    status: "success",
     message: "Lagu berhasil diperbarui",
     data: song
   });
 });
+
+
+// DELETE LAGU
+// DELETE /songs/:id
 
 app.delete("/songs/:id", (req, res) => {
   const id = Number(req.params.id);
@@ -236,17 +287,27 @@ app.delete("/songs/:id", (req, res) => {
   // Jika ID tidak ditemukan
   if (index === -1) {
     return res.status(404).json({
-      message: "Lagu tidak ditemukan",
+      status: "error",
+      message: `Lagu dengan id ${id} tidak ditemukan`,
       data: null
     });
   }
 
-  // Menghapus data
   songs.splice(index, 1);
 
-  // Response berhasil
   res.status(200).json({
-    message: "Lagu berhasil dihapus",
+    status: "success",
+    message: `Lagu dengan id ${id} berhasil dihapus`,
+    data: null
+  });
+});
+
+// CATCH-ALL 404
+
+app.use((req, res) => {
+  res.status(404).json({
+    status: "error",
+    message: "Endpoint tidak ditemukan",
     data: null
   });
 });
